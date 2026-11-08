@@ -1,0 +1,17 @@
+# Netlify: фронтенд Law & Justice CRM (Next.js 16, адаптер OpenNext подключается автоматически)
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NEXT_TELEMETRY_DISABLED = "1"
+  # NEXT_PUBLIC_API_URL задаётся в Site configuration → Environment variables
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

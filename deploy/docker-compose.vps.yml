@@ -1,0 +1,68 @@
+# Law & Justice CRM — бэкенд на VPS (фронтенд на Netlify).
+# Запуск: см. deploy/README.md. Caddy сам выпускает и продлевает SSL (Let's Encrypt).
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: lj
+      POSTGRES_USER: lj
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lj -d lj"]
+      interval: 5s
+      retries: 20
+    restart: unless-stopped
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: [redisdata:/data]
+    restart: unless-stopped
+  backend:
+    build: ../backend
+    env_file: ../backend/.env
+    environment:
+      DATABASE_URL: postgres://lj:${POSTGRES_PASSWORD}@db:5432/lj
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_started }
+    volumes: [media:/app/media]
+    expose: ["8000"]
+    restart: unless-stopped
+  worker:
+    build: ../backend
+    env_file: ../backend/.env
+    environment:
+      DATABASE_URL: postgres://lj:${POSTGRES_PASSWORD}@db:5432/lj
+      REDIS_URL: redis://redis:6379/0
+    command: celery -A config worker -l info --concurrency 2
+    depends_on: [backend]
+    volumes: [media:/app/media]
+    restart: unless-stopped
+  beat:
+    build: ../backend
+    env_file: ../backend/.env
+    environment:
+      DATABASE_URL: postgres://lj:${POSTGRES_PASSWORD}@db:5432/lj
+      REDIS_URL: redis://redis:6379/0
+    command: celery -A config beat -l info --schedule /tmp/celerybeat-schedule
+    depends_on: [backend]
+    restart: unless-stopped
+  caddy:
+    image: caddy:2-alpine
+    environment:
+      API_DOMAIN: ${API_DOMAIN}
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [backend]
+    restart: unless-stopped
+volumes:
+  pgdata:
+  redisdata:
+  media:
+  caddy_data:
+  caddy_config:
