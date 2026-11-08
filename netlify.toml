@@ -15,3 +15,7 @@
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Адаптер Next.js (OpenNext). Явно, чтобы Netlify не публиковал сырую папку .next
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
