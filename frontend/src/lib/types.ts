@@ -16,16 +16,12 @@ export interface User {
   email: string;
   is_active: boolean;
   has_2fa: boolean;
-  twofa_required: boolean; // роль обязана иметь 2FA (admin, manager)
-  recovery_left: number; // осталось резервных кодов
   substitute_id: number | null;
   substitute_until: string | null;
   workload: number; // активных дел
 }
 
-export interface LoginResponse { access: string; refresh: string; user: User; recovery_codes?: string[]; recovery_left?: number }
-// Шаг 1 входа может вернуть: 401 {otp_required, mfa_token} или 403 {setup_required, mfa_token}
-export interface TwoFASetup { secret: string; otpauth_url: string; qr_svg: string }
+export interface LoginResponse { access: string; refresh: string; user: User }
 // 401 c { detail, otp_required: true } — нужен код 2FA
 
 export interface DictItem { id: number; kind: DictKind; code: string; name: string; order: number; extra: Record<string, unknown> }

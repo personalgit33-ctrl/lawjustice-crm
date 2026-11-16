@@ -6,7 +6,6 @@ import { Icon } from '@/components/Icon';
 import { Empty, Modal, Toggle, View, useLoad } from '@/components/ui';
 import { UserSelect } from '@/components/common';
 import { TwoFA } from '@/components/TwoFA';
-import { PasswordInput } from '@/components/auth';
 import { toast, toastErr } from '@/components/toast';
 import { dt } from '@/lib/format';
 import { t } from '@/i18n';
@@ -40,7 +39,7 @@ function Main({ st, save }: { st: AppSettings; save: (b: any) => void }) {
     <div className="card"><h3>Рабочее время и напоминания</h3>
       <div className="set"><div>Рабочее время<small>вне его звонки и чаты принимает ассистент</small></div><div className="row"><input className="fld" type="time" defaultValue={st.work_hours.start} onBlur={(e) => save({ work_hours: { ...st.work_hours, start: e.target.value } })} />—<input className="fld" type="time" defaultValue={st.work_hours.end} onBlur={(e) => save({ work_hours: { ...st.work_hours, end: e.target.value } })} /></div></div>
       <div className="set"><div>Напоминания о сроках<small>за сколько дней, через запятую</small></div><input className="fld" defaultValue={st.reminders_days.join(', ')} onBlur={(e) => save({ reminders_days: e.target.value.split(',').map((x) => Number(x.trim())).filter((x) => !isNaN(x)) })} /></div>
-      <div className="set"><div>Синее боковое меню<small>по умолчанию белое (ТЗ 3.6); синее — как в первом прототипе, на этом устройстве</small></div><Toggle on={typeof document !== 'undefined' && document.documentElement.dataset.sidebar === 'brand'} onChange={(x) => { document.documentElement.dataset.sidebar = x ? 'brand' : 'light'; try { localStorage.setItem('lj_sidebar', x ? 'brand' : 'light'); } catch {} }} /></div>
+      <div className="set"><div>Боковое меню<small>синее (прототип) или белое (ТЗ 3.6) — на этом устройстве</small></div><Toggle on={typeof document !== 'undefined' && document.documentElement.dataset.sidebar === 'light'} onChange={(x) => { document.documentElement.dataset.sidebar = x ? 'light' : 'brand'; try { localStorage.setItem('lj_sidebar', x ? 'light' : 'brand'); } catch {} }} /></div>
     </div>
   </div>;
 }
@@ -75,7 +74,7 @@ function Users() {
   return <><div className="row" style={{ marginBottom: 12 }}><button className="btn sm" onClick={() => setModal({ kind: 'new' })}><Icon name="plus" />Сотрудник</button><span className="muted small">Замещение — временная передача дел, карточек, диалогов и сроков; по окончании доступ возвращается автоматически.</span></div>
     <View s={s}>{(list) => <div className="card np"><table><thead><tr><th>Сотрудник</th><th>Роль</th><th>Специализация</th><th>Контакты</th><th>Дел</th><th>2FA</th><th>Статус</th><th></th></tr></thead><tbody>
       {list.filter((u) => u.role !== 'ai').map((u) => <tr key={u.id}><td><b style={{ fontWeight: 500 }}>{u.full_name}</b><div className="muted small">@{u.username}</div></td><td>{u.role_label}</td><td className="muted">{u.specialization || '—'}</td><td className="small">{u.phone}<div className="muted">{u.email}</div></td><td>{u.workload}</td>
-        <td>{u.has_2fa ? <span className="row"><span className="tag g">Вкл.</span><button className="btn link small" title="Сотрудник потерял телефон" onClick={async () => { if (!confirm(`Сбросить двухфакторный вход для ${u.full_name}? При следующем входе ему нужно будет настроить его заново.`)) return; try { await post(`users/${u.id}/reset-2fa/`); done('Двухфакторный вход сброшен'); } catch (e) { toastErr(e); } }}>Сбросить</button></span> : <span className={`tag ${u.twofa_required ? 'a' : ''}`}>{u.twofa_required ? 'Нужно настроить' : 'Нет'}</span>}</td>
+        <td>{u.has_2fa ? <span className="tag g">Вкл.</span> : <span className={`tag ${u.role === 'admin' || u.role === 'manager' ? 'a' : ''}`}>Нет</span>}</td>
         <td>{!u.is_active ? <span className="tag r">Заблокирован</span> : u.substitute_id ? <span className="tag a">Замещение до {dt(u.substitute_until, false)}</span> : <span className="tag g">Активен</span>}</td>
         <td><div className="row" style={{ justifyContent: 'flex-end' }}><button className="btn ghost sm" onClick={() => setModal({ kind: 'edit', u })}>{t('common.edit')}</button>{u.is_active && <><button className="btn ghost sm" onClick={() => setModal({ kind: 'sub', u })}>Замещение</button><button className="btn ghost sm" onClick={() => setModal({ kind: 'block', u })}>Уволить</button></>}</div></td></tr>)}
     </tbody></table></div>}</View>
@@ -90,7 +89,7 @@ function UserForm({ u, onClose, onDone }: { u?: User; onClose: () => void; onDon
   return <Modal small onClose={onClose}><h2>{u ? 'Сотрудник' : 'Новый сотрудник'}</h2><div className="fg">
     <div className="full"><div className="lbl">ФИО</div><input className="fld" value={v.full_name} onChange={(e) => set('full_name', e.target.value)} /></div>
     <div><div className="lbl">Логин</div><input className="fld" value={v.username} disabled={!!u} onChange={(e) => set('username', e.target.value)} /></div>
-    <div><div className="lbl">{u ? 'Новый пароль' : 'Пароль'}</div><PasswordInput value={v.password} onChange={(e) => set('password', e.target.value)} placeholder={u ? 'не менять' : ''} autoComplete="new-password" /></div>
+    <div><div className="lbl">{u ? 'Новый пароль' : 'Пароль'}</div><input className="fld" type="password" value={v.password} onChange={(e) => set('password', e.target.value)} placeholder={u ? 'не менять' : ''} /></div>
     <div><div className="lbl">Роль</div><select className="fld" value={v.role} onChange={(e) => set('role', e.target.value)}>{ROLES.map((r) => <option key={r} value={r}>{t('role.' + r)}</option>)}</select></div>
     <div><div className="lbl">Специализация</div><input className="fld" value={v.specialization} onChange={(e) => set('specialization', e.target.value)} /></div>
     <div><div className="lbl">Телефон</div><input className="fld" value={v.phone} onChange={(e) => set('phone', e.target.value)} /></div>

@@ -122,7 +122,7 @@ REST_FRAMEWORK = {
         "rest_framework.parsers.FormParser",
     ],
     "EXCEPTION_HANDLER": "apps.accounts.exceptions.handler",
-    "DEFAULT_THROTTLE_RATES": {"login": env("LOGIN_RATE", "10/min")},
+    "DEFAULT_THROTTLE_RATES": {"login": "10/min"},
 }
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=int(env("JWT_ACCESS_MIN", 30))),
@@ -131,8 +131,6 @@ SIMPLE_JWT = {
 }
 
 CORS_ALLOWED_ORIGINS = [o for o in env("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",") if o]
-# превью-деплои Vercel: https://<проект>-<хэш>-<команда>.vercel.app
-CORS_ALLOWED_ORIGIN_REGEXES = [r for r in env("CORS_ALLOWED_ORIGIN_REGEXES", "").split(",") if r]
 CORS_ALLOW_ALL_ORIGINS = DEBUG
 
 REDIS_URL = env("REDIS_URL")
@@ -176,7 +174,6 @@ DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", "crm@lawjustice.kg")
 
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-    USE_X_FORWARDED_HOST = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 

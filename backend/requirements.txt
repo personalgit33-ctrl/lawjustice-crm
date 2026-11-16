@@ -14,4 +14,3 @@ openpyxl>=3.1
 anthropic>=0.40
 requests>=2.32
 django-storages[s3]>=1.14
-qrcode>=7.4

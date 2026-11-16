@@ -17,8 +17,6 @@ class User(AbstractUser):
     phone = models.CharField(max_length=32, blank=True)
     totp_secret = models.CharField(max_length=64, blank=True)
     totp_enabled = models.BooleanField(default=False)
-    totp_last_step = models.BigIntegerField(default=0)  # защита от повторного использования кода
-    recovery_codes = models.JSONField(default=list, blank=True)  # sha256-хэши одноразовых резервных кодов
     # Замещение (п. 4.4): пока substitute_until не прошло, substitute видит зону ответственности этого сотрудника
     substitute = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL, related_name="substituting")
     substitute_until = models.DateTimeField(null=True, blank=True)

@@ -35,10 +35,6 @@ export function Shell({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try { const sb = localStorage.getItem('lj_sidebar'); if (sb) document.documentElement.dataset.sidebar = sb; } catch {}
-    try {
-      const left = sessionStorage.getItem('lj_recovery_left');
-      if (left !== null) { sessionStorage.removeItem('lj_recovery_left'); toast(`Вход по резервному коду. Осталось кодов: ${left}. Новые можно выпустить в профиле.`); }
-    } catch {}
     const u = () => setOnline(navigator.onLine); u();
     window.addEventListener('online', u); window.addEventListener('offline', u);
     return () => { window.removeEventListener('online', u); window.removeEventListener('offline', u); };
@@ -60,24 +56,17 @@ export function Shell({ children }: { children: ReactNode }) {
 
   return <div className="app">
     <aside className="side">
-      <div className="side-in">
-        <div className="brand"><div className="mark"><Icon name="scale" /></div><div className="bname"><b>{t('brand.name')}</b><small>{t('brand.sub')}</small></div></div>
-        <nav className="nav">{NAV.filter(([k], i, arr) => {
-          if (k !== 'sep') return can(user.role, k);
-          // скрываем заголовок раздела, если под ним пусто
-          for (let j = i + 1; j < arr.length && arr[j][0] !== 'sep'; j++) if (can(user.role, arr[j][0] as Section)) return true;
-          return false;
-        }).map(([k, ic, label, c, cl], i) => k === 'sep'
-          ? <div key={'s' + i} className="sep"><span>{t(label)}</span></div>
-          : <Link key={k} href={'/' + k} className={sec === k ? 'on' : ''} title={t(label)}><span className="nic"><Icon name={ic} />{cnt(c) ? <i className={`bdg ${cl || ''}`} /> : null}</span><span className="lb">{t(label)}</span>{cnt(c) ? <span className={`cnt ${cl || ''}`}>{cnt(c)}</span> : null}</Link>)}</nav>
-        <div className="me">
-          <div className="me-in" onClick={() => setProfile(true)} title="Профиль и безопасность">
-            <div className="ava">{user.initials}</div>
-            <div className="mtxt"><b>{user.full_name}</b><small>{user.role_label || t('role.' + user.role)}</small></div>
-            <button onClick={(e) => { e.stopPropagation(); logout(); }} title={t('common.logout')}><Icon name="logout" /></button>
-          </div>
-        </div>
-      </div>
+      <div className="brand"><div className="mark"><Icon name="scale" /></div><div><b>{t('brand.name')}</b><small>{t('brand.sub')}</small></div></div>
+      <nav className="nav">{NAV.filter(([k], i, arr) => {
+        if (k !== 'sep') return can(user.role, k);
+        // скрываем заголовок раздела, если под ним пусто
+        for (let j = i + 1; j < arr.length && arr[j][0] !== 'sep'; j++) if (can(user.role, arr[j][0] as Section)) return true;
+        return false;
+      }).map(([k, ic, label, c, cl], i) => k === 'sep'
+        ? <div key={'s' + i} className="sep">{t(label)}</div>
+        : <Link key={k} href={'/' + k} className={sec === k ? 'on' : ''}><Icon name={ic} /><span>{t(label)}</span>{cnt(c) ? <span className={`cnt ${cl || ''}`}>{cnt(c)}</span> : null}</Link>)}</nav>
+      <div className="me"><div className="ava">{user.initials}</div><div style={{ minWidth: 0, cursor: 'pointer' }} onClick={() => setProfile(true)} title="Профиль и безопасность"><div style={{ fontSize: 12.5, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.full_name}</div><div style={{ fontSize: 11, color: 'var(--side-sub)' }}>{user.role_label || t('role.' + user.role)}</div></div>
+        <button onClick={logout} title={t('common.logout')}><Icon name="logout" /></button></div>
     </aside>
     <main className="main">
       <Topbar title={title} onLogout={logout} />
@@ -126,7 +115,7 @@ function Topbar({ title, onLogout }: { title: string; onLogout: () => void }) {
   const total = res ? groups.reduce((a, [k]) => a + (res[k]?.length || 0), 0) : 0;
 
   return <div className="top">
-    <div style={{ minWidth: 0 }}><div className="crumbs"><Link href="/dashboard">{t('brand.short')}</Link><Icon name="chev" /><span>{title}</span></div><h1>{title}</h1></div>
+    <div style={{ minWidth: 0 }}><h1>{title}</h1></div>
     <div className="search" ref={boxRef}><Icon name="search" /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('search.placeholder')} onKeyDown={(e) => e.key === 'Escape' && setRes(null)} />
       {res && <div className="sres">{total === 0 ? <div className="state" style={{ padding: 16 }}>{t('search.nothing')}</div> :
         groups.map(([k, l, f]) => res[k]?.length ? <div key={k}><div className="sg">{t(l)}</div>{res[k].map((x: any) => { const [h, a, b] = f(x); return <a key={h} href={h} onClick={(e) => { e.preventDefault(); go(h); }}><div style={{ fontWeight: 500 }}>{a}</div>{b && <div className="muted small" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{b}</div>}</a>; })}</div> : null)}</div>}

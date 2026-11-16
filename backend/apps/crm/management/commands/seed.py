@@ -87,9 +87,7 @@ class Command(BaseCommand):
             u, created = User.objects.get_or_create(username=username, defaults={"full_name": name, "role": role, "specialization": spec, "email": f"{username}@lawjustice.kg", "is_staff": role == "admin", "is_superuser": role == "admin"})
             if created or self.reset:
                 u.set_password(PASSWORD)
-                u.is_active, u.substitute, u.substitute_until = True, None, None
-                u.totp_enabled, u.totp_secret, u.recovery_codes, u.totp_last_step = False, "", [], 0
-                u.failed_logins, u.locked_until = 0, None
+                u.is_active, u.substitute, u.substitute_until, u.totp_enabled = True, None, None, False
                 u.save()
             U[username] = u
         User.ai_user()

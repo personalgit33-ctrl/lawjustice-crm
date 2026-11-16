@@ -8,24 +8,8 @@ BASE = (sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8000") + "/api/"
 FAILS = []
 
 
-SECRETS = {}
-
-
 def login(u):
-    """Вход с учётом 2FA: admin/manager проходят обязательную настройку, затем вводят код."""
-    import time
-
-    import pyotp
-
     r = requests.post(BASE + "auth/login/", json={"username": u, "password": "demo12345"})
-    d = r.json()
-    if r.status_code == 403 and d.get("setup_required"):
-        st = requests.post(BASE + "auth/2fa/enroll/start/", json={"mfa_token": d["mfa_token"]}).json()
-        SECRETS[u] = st["secret"]
-        r = requests.post(BASE + "auth/2fa/enroll/finish/", json={"mfa_token": d["mfa_token"], "code": pyotp.TOTP(st["secret"]).now()})
-    elif r.status_code == 401 and d.get("otp_required"):
-        time.sleep(31)  # код из предыдущего шага уже использован
-        r = requests.post(BASE + "auth/login/verify/", json={"mfa_token": d["mfa_token"], "code": pyotp.TOTP(SECRETS[u]).now()})
     r.raise_for_status()
     s = requests.Session()
     s.headers["Authorization"] = "Bearer " + r.json()["access"]
