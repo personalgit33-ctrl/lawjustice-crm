@@ -1,0 +1,42 @@
+# Law & Justice CRM — stage/prod. Запуск: cp backend/.env.example backend/.env && docker compose up -d --build
+services:
+  db:
+    image: postgres:16-alpine
+    environment: { POSTGRES_DB: lj, POSTGRES_USER: lj, POSTGRES_PASSWORD: lj }
+    volumes: [pgdata:/var/lib/postgresql/data]
+    restart: unless-stopped
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+  backend:
+    build: ./backend
+    env_file: ./backend/.env
+    depends_on: [db, redis]
+    volumes: [media:/app/media]
+    ports: ["8000:8000"]
+    restart: unless-stopped
+  worker:
+    build: ./backend
+    env_file: ./backend/.env
+    command: celery -A config worker -l info
+    depends_on: [db, redis]
+    volumes: [media:/app/media]
+    restart: unless-stopped
+  beat:
+    build: ./backend
+    env_file: ./backend/.env
+    command: celery -A config beat -l info
+    depends_on: [redis]
+    restart: unless-stopped
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL:-http://localhost:8000}
+        NEXT_PUBLIC_SIDEBAR: ${SIDEBAR:-blue}
+    depends_on: [backend]
+    ports: ["3000:3000"]
+    restart: unless-stopped
+volumes:
+  pgdata:
+  media:
