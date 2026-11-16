@@ -12,7 +12,7 @@ import { dt, fromLocalInput, fsize, toLocalInput } from '@/lib/format';
 import { t } from '@/i18n';
 import type { Attachment, Board, BoardShort, CardDetail, Case, Client, Label } from '@/lib/types';
 
-const LCOLORS = ['#D14343', '#2A47A1', '#0F766E', '#B7791F', '#64748B', '#6D5BD0'];
+const LCOLORS = ['#D14343', '#2F5BB7', '#0F766E', '#B7791F', '#64748B', '#6D5BD0'];
 
 export function CardModal({ id, labels, onClose, onChanged }: { id: number; labels: Label[]; onClose: () => void; onChanged?: (c: CardDetail | null) => void }) {
   const [c, setC] = useState<CardDetail | null>(null);

@@ -37,7 +37,7 @@
 3. **Site name** — например `lawjustice-crm` → адрес будет `https://lawjustice-crm.netlify.app`.
 4. **Environment variables → Add a variable:**
    - `NEXT_PUBLIC_API_URL` = `https://api-<ваш-IP>.sslip.io`
-   - (необязательно) `NEXT_PUBLIC_SIDEBAR` = `brand` — синее меню вместо белого.
+   - (необязательно) `NEXT_PUBLIC_SIDEBAR` = `light` — светлое меню вместо тёмного фирменного.
 5. **Deploy.** Адрес сайта понадобится на шаге 3.
 
 > `NEXT_PUBLIC_API_URL` вшивается в сборку. Если поменяли — **Deploys → Trigger deploy → Clear cache and deploy site**.

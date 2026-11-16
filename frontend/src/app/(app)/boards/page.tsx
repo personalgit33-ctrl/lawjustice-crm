@@ -54,13 +54,13 @@ function Boards() {
     <div className="bhead">
       {boards.data && <Seg<string> value={String(bid ?? '')} onChange={(v) => selectBoard(Number(v))} options={boards.data.filter((x) => !x.is_archived).map((x) => [String(x.id), <span key={x.id} className="row" style={{ gap: 5 }}>{x.is_favorite && <Icon name="star" size={12} />}{x.name}</span>])} />}
       <button className="btn ghost sm" onClick={() => setModal('new')}><Icon name="plus" />Доска</button>
-      <div style={{ marginLeft: 'auto' }} className="row wrap">
+      <div style={{ marginLeft: 'auto', justifyContent: 'flex-end', flex: '1 1 auto' }} className="row wrap">
         <CardSearch onOpen={(id, board) => { setBid(board); setOpenCard(id); }} />
         <Seg<ViewMode> value={view} onChange={setView} options={[['board', 'Доска'], ['list', 'Список'], ['cal', 'Календарь']]} />
         <button className={`btn ghost sm`} onClick={() => setShowF(!showF)} style={Object.values(f).some(Boolean) ? { borderColor: 'var(--primary)', color: 'var(--primary)', background: 'var(--primary-light)' } : undefined}><Icon name="filter" />{t('common.filter')}</button>
-        {b && <button className="btn ghost sm" onClick={() => setModal('settings')}><Icon name="set" />Настройки доски</button>}
-        {isManager(user.role) && <button className="btn ghost sm" onClick={() => setModal('import')}><Icon name="dl" />Импорт из Trello</button>}
-        {isManager(user.role) && <button className="btn sm" onClick={() => router.push('/assistant')}><Icon name="term" />Создать через ассистента</button>}
+        {b && <button className="btn ghost sm" onClick={() => setModal('settings')}><Icon name="set" />Настройки</button>}
+        {isManager(user.role) && <button className="btn ghost sm" onClick={() => setModal('import')}><Icon name="dl" />Из Trello</button>}
+        {isManager(user.role) && <button className="btn sm" onClick={() => router.push('/assistant')}><Icon name="term" />Через ассистента</button>}
       </div>
     </div>
     {showF && b && <FilterBar f={f} setF={setF} board={b} />}
@@ -88,7 +88,7 @@ function FilterBar({ f, setF, board }: { f: Filters; setF: (f: Filters) => void;
 function CardSearch({ onOpen }: { onOpen: (id: number, board: number) => void }) {
   const [q, setQ] = useState(''); const [res, setRes] = useState<any[] | null>(null);
   useEffect(() => { if (q.trim().length < 2) { setRes(null); return; } const h = setTimeout(() => get<any[]>(`cards/search/?q=${encodeURIComponent(q)}`).then(setRes).catch(() => setRes([])), 250); return () => clearTimeout(h); }, [q]);
-  return <div style={{ position: 'relative' }}><input className="fld" style={{ width: 220, padding: '5px 9px' }} placeholder="Поиск по карточкам всех досок" value={q} onChange={(e) => setQ(e.target.value)} />
+  return <div className="csearch" style={{ position: 'relative' }}><input className="fld" style={{ padding: '5px 9px' }} placeholder="Поиск по карточкам всех досок" value={q} onChange={(e) => setQ(e.target.value)} />
     {res && <div className="sres" style={{ width: 320, left: 'auto', right: 0 }}>{res.length === 0 ? <div className="state" style={{ padding: 14 }}>{t('search.nothing')}</div> : res.map((c) => <a key={c.id} href="#" onClick={(e) => { e.preventDefault(); setRes(null); setQ(''); onOpen(c.id, c.board ?? c.board_id); }}><div style={{ fontWeight: 500 }}>{c.title}</div><div className="muted small">{c.board_name} › {c.list_name}</div></a>)}</div>}
   </div>;
 }
@@ -203,12 +203,12 @@ function CalView({ b, onOpen }: { b: Board; onOpen: (id: number) => void }) {
 }
 
 function NewBoard({ onClose, onDone }: { onClose: () => void; onDone: (b: Board) => void }) {
-  const [name, setName] = useState(''); const [tpl, setTpl] = useState('blank'); const [color, setColor] = useState('#2A47A1');
+  const [name, setName] = useState(''); const [tpl, setTpl] = useState('blank'); const [color, setColor] = useState('#C58514');
   const TPL: [string, string][] = [['blank', 'Пустая'], ['leads', 'Лиды'], ['family', 'Семейные дела'], ['criminal', 'Уголовные дела'], ['inner', 'Внутренние задачи']];
   return <Modal small onClose={onClose}><h2>Новая доска</h2>
     <div className="lbl">Название</div><input className="fld" autoFocus value={name} onChange={(e) => setName(e.target.value)} />
     <div className="lbl" style={{ marginTop: 10 }}>Шаблон</div><div className="picker">{TPL.map(([k, l]) => <button key={k} className={tpl === k ? 'on' : ''} onClick={() => { setTpl(k); if (!name || TPL.some((x) => x[1] === name)) setName(k === 'blank' ? '' : l); }}>{l}</button>)}</div>
-    <div className="lbl" style={{ marginTop: 10 }}>Цвет</div><div className="row">{['#2A47A1', '#0F766E', '#6D5BD0', '#B7791F', '#64748B', '#D14343'].map((c) => <button key={c} onClick={() => setColor(c)} style={{ width: 24, height: 24, borderRadius: 5, background: c, outline: color === c ? '2px solid var(--text)' : 'none' }} />)}</div>
+    <div className="lbl" style={{ marginTop: 10 }}>Цвет</div><div className="row">{['#C58514', '#2F5BB7', '#0F766E', '#6D5BD0', '#B7791F', '#64748B', '#D14343'].map((c) => <button key={c} onClick={() => setColor(c)} style={{ width: 24, height: 24, borderRadius: 5, background: c, outline: color === c ? '2px solid var(--text)' : 'none' }} />)}</div>
     <div className="row" style={{ marginTop: 16, justifyContent: 'flex-end' }}><button className="btn ghost" onClick={onClose}>{t('common.cancel')}</button>
       <button className="btn" disabled={!name.trim()} onClick={async () => { try { onDone(await post<Board>('boards/', { name: name.trim(), template: tpl, color })); toast('Доска создана'); } catch (e) { toastErr(e); } }}>{t('common.create')}</button></div>
   </Modal>;

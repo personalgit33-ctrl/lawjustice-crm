@@ -2,7 +2,13 @@
 
 Веб-CRM юридической компании по ТЗ ред. 1.1: дела, клиенты, доски вместо Trello, Центр обращений (WhatsApp, Google, Meta, телефония), сроки, конфликт интересов, договоры и оплаты, AI первой линии и AI-ассистент администратора.
 
-**Стек (ТЗ, раздел 2):** Next.js 14 + TypeScript · Django 5 + DRF · PostgreSQL · Celery + Redis · WebSocket (Channels) · S3-совместимое хранилище · Claude API через AI Gateway.
+**Стек (ТЗ, раздел 2):** Next.js 16 + React 19 + TypeScript · Django 5 + DRF · PostgreSQL · Celery + Redis · WebSocket (Channels) · S3-совместимое хранилище · Claude API через AI Gateway.
+
+## Быстрый старт на Windows
+
+1. Установите Python 3.12 (python.org, галочка «Add python.exe to PATH») и Node.js LTS (nodejs.org).
+2. Двойной клик `start-backend.bat` — дождитесь строки «Бэкенд: http://localhost:8000».
+3. Двойной клик `start-frontend.bat` — откройте http://localhost:3000.
 
 ## Быстрый старт (локально, без Docker)
 
@@ -22,7 +28,11 @@ npm run dev                      # http://localhost:3000
 
 Учётные записи (пароль `demo12345`): `admin` — администратор, `elmira` — руководитель, `bakyt` / `azamat` / `aigul` / `nurlan` — юристы, `meerim` — оператор.
 
-## Stage / prod
+## Деплой: Netlify + бесплатный VPS
+
+Пошаговая инструкция — [deploy/README.md](deploy/README.md). Коротко: фронтенд импортируется в Netlify (настройки в `netlify.toml`), бэкенд ставится на VPS одной командой `sudo bash deploy/setup-vps.sh --frontend https://<сайт>.netlify.app --demo`.
+
+## Stage / prod на одном сервере
 
 ```bash
 cp backend/.env.example backend/.env    # заполнить секреты и ключи интеграций

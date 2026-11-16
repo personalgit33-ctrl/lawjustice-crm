@@ -9,7 +9,7 @@ import { CfTag, DueTag, Empty, View, useLoad } from '@/components/ui';
 import { UserSelect } from '@/components/common';
 import { NewDeadline } from '@/components/NewDeadline';
 import { toast, toastErr } from '@/components/toast';
-import { dt } from '@/lib/format';
+import { dt, money } from '@/lib/format';
 import { t } from '@/i18n';
 import type { Case, Deadline, Party, TimelineItem } from '@/lib/types';
 
@@ -42,14 +42,14 @@ export default function CasePage() {
           <div><div className="lbl">Клиент</div><Link className="lnk" href={`/clients/${c.client}`}>{c.client_name}</Link></div>
           <div><div className="lbl">Ответственный юрист</div><UserSelect value={c.responsible} onChange={(x) => upd({ responsible: x })} /></div>
           <div><div className="lbl">Суд / инстанция</div><input className="fld" defaultValue={c.court} onBlur={(e) => e.target.value !== c.court && upd({ court: e.target.value })} /></div>
-          <div><div className="lbl">Гонорар</div><div>{c.fee != null ? `${c.fee.toLocaleString('ru-RU')} сом` : '—'} <Link className="lnk small" href="/finance">договор и оплаты</Link></div></div>
+          <div><div className="lbl">Гонорар</div><div>{c.fee != null ? money(Number(c.fee)) : '—'} <Link className="lnk small" href="/finance">договор и оплаты</Link></div></div>
           <div className="full"><div className="lbl">Участники дела (доступ)</div><div className="picker">{users.filter((u) => u.is_active && u.role !== 'ai').map((u) => <button key={u.id} className={c.members.includes(u.id) ? 'on' : ''} onClick={() => upd({ members: c.members.includes(u.id) ? c.members.filter((x) => x !== u.id) : [...c.members, u.id] })}>{u.full_name}</button>)}</div></div>
           <label className="full chk"><input type="checkbox" checked={c.is_confidential} onChange={(e) => upd({ is_confidential: e.target.checked })} /> Конфиденциальное дело</label>
           {c.is_archived ? <div className="full"><button className="btn ghost sm" onClick={() => upd({ is_archived: false })}><Icon name="undo" />Вернуть из архива</button></div> : null}
         </div></div>
         <div className="card np" style={{ marginTop: 14 }}><div className="ch" style={{ padding: '14px 16px 0' }}><h3>Сроки и события</h3><button className="btn sm" style={{ marginLeft: 'auto' }} onClick={() => setAddDl(true)}><Icon name="plus" />Срок</button></div>
           <View s={dls}>{(list) => list.length === 0 ? <Empty text="Сроков нет" /> : <table><tbody>{list.map((d) => <tr key={d.id}><td style={{ whiteSpace: 'nowrap', fontWeight: 500 }}>{d.due_label}</td><td>{d.title}<div className="muted small">{d.type_label}{d.court && ` · ${d.court}`}</div></td><td><DueTag s={d.state} /></td></tr>)}</tbody></table>}</View></div>
-        <div className="card" style={{ marginTop: 14 }}><h3>Хронология</h3><View s={tl}>{(items) => items.length === 0 ? <Empty /> : <div className="tl">{items.map((i) => <div key={i.id}><div className="muted small">{dt(i.created_at)} · {i.is_ai ? <span className="tag b">{t('common.assistant')}</span> : i.actor}</div><div>{i.link ? <Link className="lnk" href={i.link}>{i.text}</Link> : i.text}</div></div>)}</div>}</View></div>
+        <div className="card" style={{ marginTop: 14 }}><h3>Хронология</h3><View s={tl}>{(items) => items.length === 0 ? <Empty /> : <div className="tl">{items.map((i) => <div key={i.id}><div className="muted small">{dt(i.created_at)}{i.is_ai ? <> · <span className="tag b">{t('common.assistant')}</span></> : i.actor ? ` · ${i.actor}` : ''}</div><div>{i.link ? <Link className="lnk" href={i.link}>{i.text}</Link> : i.text}</div></div>)}</div>}</View></div>
       </div>
       <div><div className="card"><h3>Стороны дела</h3>
         {c.parties.length === 0 ? <div className="muted small">Стороны не указаны</div> : c.parties.map((p) => <div key={p.id} className="set"><div>{p.name}<small>{ROLE[p.role]}{p.pin && ` · ${p.pin}`}{p.phone && ` · ${p.phone}`}</small></div>

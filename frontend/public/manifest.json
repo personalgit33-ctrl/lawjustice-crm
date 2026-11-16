@@ -3,8 +3,8 @@
   "short_name": "L&J CRM",
   "start_url": "/dashboard",
   "display": "standalone",
-  "background_color": "#F5F7FB",
-  "theme_color": "#2A47A1",
+  "background_color": "#F4F2EE",
+  "theme_color": "#242424",
   "lang": "ru",
   "icons": [
     { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }

@@ -1,4 +1,4 @@
-import type { LoginResponse, User } from './types';
+import type { LoginResponse, TwoFASetup, User } from './types';
 
 export const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
 
@@ -96,8 +96,22 @@ export async function download(path: string, fallbackName = 'export') {
 
 export function fileUrl(u: string) { return u.startsWith('http') ? u : `${API_URL}${u}`; }
 
-export async function login(username: string, password: string, otp?: string): Promise<LoginResponse> {
-  const res = await api<LoginResponse>('auth/login/', { method: 'POST', body: { username, password, otp: otp || undefined }, auth: false });
+/** Шаг 1: логин и пароль. При 2FA бросает ApiError с data.otp_required / data.setup_required и data.mfa_token. */
+export async function login(username: string, password: string): Promise<LoginResponse> {
+  const res = await api<LoginResponse>('auth/login/', { method: 'POST', body: { username, password }, auth: false });
+  tokens.set(res.access, res.refresh);
+  return res;
+}
+/** Шаг 2: код из приложения или резервный код. */
+export async function loginVerify(mfa_token: string, code: string): Promise<LoginResponse> {
+  const res = await api<LoginResponse>('auth/login/verify/', { method: 'POST', body: { mfa_token, code }, auth: false });
+  tokens.set(res.access, res.refresh);
+  return res;
+}
+/** Обязательная настройка 2FA при входе (администратор, руководитель). */
+export const enrollStart = (mfa_token: string) => api<TwoFASetup>('auth/2fa/enroll/start/', { method: 'POST', body: { mfa_token }, auth: false });
+export async function enrollFinish(mfa_token: string, code: string): Promise<LoginResponse> {
+  const res = await api<LoginResponse>('auth/2fa/enroll/finish/', { method: 'POST', body: { mfa_token, code }, auth: false });
   tokens.set(res.access, res.refresh);
   return res;
 }

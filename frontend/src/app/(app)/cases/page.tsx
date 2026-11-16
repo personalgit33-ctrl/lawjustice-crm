@@ -7,6 +7,7 @@ import { Ava, Empty, Seg, View, useLoad } from '@/components/ui';
 import { CaseForm } from '@/components/CaseForm';
 import { useApp } from '@/components/AppContext';
 import type { Case } from '@/lib/types';
+import { dt } from '@/lib/format';
 
 type F = 'all' | 'mine' | 'court' | 'waiting' | 'archived';
 export default function CasesPage() {
@@ -25,7 +26,7 @@ export default function CasesPage() {
         <td><b style={{ fontWeight: 500 }}>{c.restricted ? 'Материалы скрыты' : c.title}</b>{c.is_confidential && <> <span className="tag" title="Конфиденциальное дело: доступ только участникам"><Icon name="lock" size={11} />Конфиденциально</span></>}{c.stale && <> <span className="tag a">Без движения</span></>}{c.conflict_status === 'hit' && <> <span className="tag r">Конфликт</span></>}</td>
         <td>{c.client_name}</td><td className="muted">{c.opponents || '—'}</td><td>{c.category}</td><td><span className="tag b">{c.status_label}</span></td>
         <td>{u ? <Ava initials={u.initials} name={u.full_name} /> : '—'}</td><td className="small">{c.court || '—'}</td>
-        <td>{c.nearest_deadline ? <span className={`due ${c.nearest_deadline_state === 'late' ? 'late' : c.nearest_deadline_state === 'today' || c.nearest_deadline_state === 'week' ? 'soon' : ''}`}>{new Date(c.nearest_deadline).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}</span> : '—'}</td></tr>; })}
+        <td>{c.nearest_deadline ? <span className={`due ${c.nearest_deadline_state === 'late' ? 'late' : c.nearest_deadline_state === 'today' || c.nearest_deadline_state === 'week' ? 'soon' : ''}`}>{dt(c.nearest_deadline, false)}</span> : '—'}</td></tr>; })}
     </tbody></table></div>}</View>
     {add && <CaseForm onClose={() => setAdd(false)} onDone={(c) => { setAdd(false); router.push(`/cases/${c.id}`); }} />}
   </>;

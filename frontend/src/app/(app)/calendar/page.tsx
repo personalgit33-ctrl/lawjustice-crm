@@ -38,7 +38,7 @@ export default function CalendarPage() {
   return <>
     <div className="bhead"><Seg value={mode} onChange={setMode} options={[['day', 'День'], ['week', 'Неделя'], ['month', 'Месяц']]} />
       <button className="btn ghost sm" onClick={() => shift(-1)}><Icon name="left" /></button><button className="btn ghost sm" onClick={() => setCur(new Date())}>Сегодня</button><button className="btn ghost sm" onClick={() => shift(1)}><Icon name="arrow" /></button>
-      <b style={{ fontWeight: 600, textTransform: 'capitalize' }}>{label}</b>
+      <b style={{ fontWeight: 600 }}>{label.charAt(0).toUpperCase() + label.slice(1)}</b>
       <label className="chk small"><input type="checkbox" checked={mine} onChange={(e) => setMine(e.target.checked)} />Только мои</label>
       <div className="row wrap" style={{ marginLeft: 'auto' }}>{([['var(--danger)', 'Заседания'], ['var(--warning)', 'Сроки'], ['var(--primary)', 'Консультации и встречи']] as const).map((x) => <span key={x[1]} className="tag o"><i style={{ background: x[0] }} />{x[1]}</span>)}
         <button className="btn sm" onClick={() => setAdd(true)}><Icon name="plus" />Событие</button></div></div>

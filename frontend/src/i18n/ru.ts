@@ -2,6 +2,7 @@
 export const ru = {
   'brand.name': 'LAW & JUSTICE',
   'brand.sub': 'Юридическая компания',
+  'brand.short': 'Law & Justice',
   'nav.dashboard': 'Панель', 'nav.inbox': 'Центр обращений', 'nav.boards': 'Доски', 'nav.calls': 'Звонки',
   'nav.deadlines': 'Сроки', 'nav.assistant': 'Ассистент', 'nav.sep.work': 'Работа', 'nav.clients': 'Клиенты',
   'nav.cases': 'Дела', 'nav.conflicts': 'Конфликт интересов', 'nav.calendar': 'Календарь', 'nav.finance': 'Договоры и оплаты',

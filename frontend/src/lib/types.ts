@@ -16,12 +16,16 @@ export interface User {
   email: string;
   is_active: boolean;
   has_2fa: boolean;
+  twofa_required: boolean; // роль обязана иметь 2FA (admin, manager)
+  recovery_left: number; // осталось резервных кодов
   substitute_id: number | null;
   substitute_until: string | null;
   workload: number; // активных дел
 }
 
-export interface LoginResponse { access: string; refresh: string; user: User }
+export interface LoginResponse { access: string; refresh: string; user: User; recovery_codes?: string[]; recovery_left?: number }
+// Шаг 1 входа может вернуть: 401 {otp_required, mfa_token} или 403 {setup_required, mfa_token}
+export interface TwoFASetup { secret: string; otpauth_url: string; qr_svg: string }
 // 401 c { detail, otp_required: true } — нужен код 2FA
 
 export interface DictItem { id: number; kind: DictKind; code: string; name: string; order: number; extra: Record<string, unknown> }
@@ -276,6 +280,7 @@ export interface Dashboard {
 
 export interface FunnelReport {
   period: string;
+  period_label?: string;
   totals: { leads: number; consultations: number; contracts: number; paid: number; spend: number; cost_per_client: number | null; ai_share_pct: number };
   rows: { channel: Channel; campaign: string; spend: number; leads: number; consultations: number; contracts: number; paid_amount: number; cost_per_lead: number | null; cost_per_client: number | null }[];
   funnel: { name: string; count: number; pct: number }[];

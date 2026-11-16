@@ -22,7 +22,7 @@ export default function FinancePage() {
   const exp = async () => { try { await download('finance/export/', 'finance.xlsx'); toast('Отчёт выгружен в Excel'); } catch (e) { toastErr(e); } };
   const growth = sum.data && sum.data.received_prev_month ? Math.round((sum.data.received_month / sum.data.received_prev_month - 1) * 100) : null;
   return <>
-    <View s={sum}>{(f) => <div className="grid kpis" style={{ gridTemplateColumns: 'repeat(4,1fr)' }}>
+    <View s={sum}>{(f) => <div className="grid kpis k4">
       <Kpi label="Поступления за месяц" value={money(f.received_month)} sub={growth != null ? `${growth >= 0 ? '+' : ''}${growth} % к прошлому месяцу` : ''} cls={growth != null && growth >= 0 ? 'up' : 'dn'} />
       <Kpi label="Ожидается в следующем месяце" value={money(f.expected_next)} sub="по графикам платежей" />
       <Kpi label="Дебиторская задолженность" value={money(f.receivables)} sub={`${f.overdue_count} платежа просрочены`} cls={f.overdue_count ? 'dn' : ''} />

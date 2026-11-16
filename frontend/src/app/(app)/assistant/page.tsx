@@ -41,9 +41,9 @@ export default function AssistantPage() {
     </div>)}</div>
   </div>
   <div><div className="card sugg"><h3>Примеры команд</h3>{EXAMPLES.map((e) => <button key={e} onClick={() => { setCmd(e); run(e); }}>{e}</button>)}</div>
-    <div className="card np" style={{ marginTop: 14 }}><h3 style={{ padding: '14px 16px 0' }}>Права ассистента</h3><table><tbody>
-      <tr><td style={{ width: 120 }}><span className="tag g">Сам</span></td><td className="small">лид, клиент, карточка, поля, резюме, стандартная задача, запись на консультацию</td></tr>
-      <tr><td><span className="tag a">С подтверждением</span></td><td className="small">смена ответственного, итоговые колонки, изменение данных клиента, массовые действия</td></tr>
-      <tr><td><span className="tag r">Запрещено</span></td><td className="small">удаление, закрытие дела, финансы, юридические оценки, решения по конфликту интересов, конфиденциальные дела</td></tr>
-    </tbody></table></div></div></div>;
+    <div className="card np" style={{ marginTop: 14 }}><h3 style={{ padding: '14px 16px 0' }}>Права ассистента</h3><div className="rights">
+      <div><span className="tag g">Сам</span><span className="small">лид, клиент, карточка, поля, резюме, стандартная задача, запись на консультацию</span></div>
+      <div><span className="tag a">С подтверждением</span><span className="small">смена ответственного, итоговые колонки, изменение данных клиента, массовые действия</span></div>
+      <div><span className="tag r">Запрещено</span><span className="small">удаление, закрытие дела, финансы, юридические оценки, решения по конфликту интересов, конфиденциальные дела</span></div>
+    </div></div></div></div>;
 }

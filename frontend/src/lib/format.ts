@@ -1,5 +1,8 @@
 export const money = (n: number | null | undefined) => n == null ? '—' : `${Math.round(n).toLocaleString('ru-RU').replace(/,/g, ' ')} сом`;
 export const num = (n: number | null | undefined) => n == null ? '—' : Math.round(n).toLocaleString('ru-RU');
+const MON = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+/** строчная первая буква — для дат внутри фразы («получено вчера») */
+export const lc = (s: string) => s ? s.charAt(0).toLowerCase() + s.slice(1) : s;
 export function dt(s: string | null | undefined, withTime = true) {
   if (!s) return '—';
   const d = new Date(s); if (isNaN(+d)) return s;
@@ -8,7 +11,7 @@ export function dt(s: string | null | undefined, withTime = true) {
   const time = d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
   if (same) return withTime ? `Сегодня, ${time}` : 'Сегодня';
   if (d.toDateString() === y.toDateString()) return withTime ? `Вчера, ${time}` : 'Вчера';
-  const date = d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: d.getFullYear() !== now.getFullYear() ? 'numeric' : undefined });
+  const date = `${d.getDate()} ${MON[d.getMonth()]}${d.getFullYear() !== now.getFullYear() ? ' ' + d.getFullYear() : ''}`;
   return withTime ? `${date}, ${time}` : date;
 }
 export const time = (s: string) => { const d = new Date(s); return isNaN(+d) ? s : d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }); };

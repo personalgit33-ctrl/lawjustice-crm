@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Icon } from './Icon';
+import { LogoMark } from './Logo';
 import { useApp, beep } from './AppContext';
 import { toast, toastErr } from './toast';
 import { Ava, Empty, Modal } from './ui';
@@ -22,7 +23,8 @@ const NAV: NavItem[] = [
   ['calendar', 'cal', 'nav.calendar'], ['finance', 'fin', 'nav.finance'],
   ['sep', '', 'nav.sep.manage'], ['reports', 'chart', 'nav.reports'], ['audit', 'log', 'nav.audit'], ['settings', 'set', 'nav.settings'],
 ];
-const MNAV: [Section, string, string][] = [['dashboard', 'dash', 'nav.dashboard'], ['inbox', 'inbox', 'mnav.inbox'], ['boards', 'boards', 'nav.boards'], ['deadlines', 'clock', 'nav.deadlines'], ['calendar', 'cal', 'nav.calendar']];
+// нижнее меню на телефоне: 4 частых раздела + «Ещё» со всеми остальными, профилем и выходом
+const MNAV: [Section, string, string][] = [['dashboard', 'dash', 'nav.dashboard'], ['inbox', 'inbox', 'mnav.inbox'], ['boards', 'boards', 'nav.boards'], ['deadlines', 'clock', 'nav.deadlines']];
 
 export function Shell({ children }: { children: ReactNode }) {
   const path = usePathname() || '/';
@@ -32,9 +34,15 @@ export function Shell({ children }: { children: ReactNode }) {
   const [online, setOnline] = useState(true);
   const [call, setCall] = useState<IncomingCallEvent | null>(null);
   const [profile, setProfile] = useState(false);
+  const [more, setMore] = useState(false);
+  useEffect(() => setMore(false), [path]);
 
   useEffect(() => {
-    try { const sb = localStorage.getItem('lj_sidebar'); if (sb) document.documentElement.dataset.sidebar = sb; } catch {}
+    try { const sb = localStorage.getItem('lj_sidebar'); if (sb) document.documentElement.dataset.sidebar = sb === 'light' ? 'light' : 'dark'; } catch {}
+    try {
+      const left = sessionStorage.getItem('lj_recovery_left');
+      if (left !== null) { sessionStorage.removeItem('lj_recovery_left'); toast(`Вход по резервному коду. Осталось кодов: ${left}. Новые можно выпустить в профиле.`); }
+    } catch {}
     const u = () => setOnline(navigator.onLine); u();
     window.addEventListener('online', u); window.addEventListener('offline', u);
     return () => { window.removeEventListener('online', u); window.removeEventListener('offline', u); };
@@ -56,23 +64,41 @@ export function Shell({ children }: { children: ReactNode }) {
 
   return <div className="app">
     <aside className="side">
-      <div className="brand"><div className="mark"><Icon name="scale" /></div><div><b>{t('brand.name')}</b><small>{t('brand.sub')}</small></div></div>
-      <nav className="nav">{NAV.filter(([k], i, arr) => {
-        if (k !== 'sep') return can(user.role, k);
-        // скрываем заголовок раздела, если под ним пусто
-        for (let j = i + 1; j < arr.length && arr[j][0] !== 'sep'; j++) if (can(user.role, arr[j][0] as Section)) return true;
-        return false;
-      }).map(([k, ic, label, c, cl], i) => k === 'sep'
-        ? <div key={'s' + i} className="sep">{t(label)}</div>
-        : <Link key={k} href={'/' + k} className={sec === k ? 'on' : ''}><Icon name={ic} /><span>{t(label)}</span>{cnt(c) ? <span className={`cnt ${cl || ''}`}>{cnt(c)}</span> : null}</Link>)}</nav>
-      <div className="me"><div className="ava">{user.initials}</div><div style={{ minWidth: 0, cursor: 'pointer' }} onClick={() => setProfile(true)} title="Профиль и безопасность"><div style={{ fontSize: 12.5, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.full_name}</div><div style={{ fontSize: 11, color: 'var(--side-sub)' }}>{user.role_label || t('role.' + user.role)}</div></div>
-        <button onClick={logout} title={t('common.logout')}><Icon name="logout" /></button></div>
+      <div className="side-in">
+        <div className="brand"><div className="mark"><LogoMark /></div><div className="bname"><b>{t('brand.name')}</b><small>{t('brand.sub')}</small></div></div>
+        <nav className="nav">{NAV.filter(([k], i, arr) => {
+          if (k !== 'sep') return can(user.role, k);
+          // скрываем заголовок раздела, если под ним пусто
+          for (let j = i + 1; j < arr.length && arr[j][0] !== 'sep'; j++) if (can(user.role, arr[j][0] as Section)) return true;
+          return false;
+        }).map(([k, ic, label, c, cl], i) => k === 'sep'
+          ? <div key={'s' + i} className="sep"><span>{t(label)}</span></div>
+          : <Link key={k} href={'/' + k} className={sec === k ? 'on' : ''} title={t(label)}><span className="nic"><Icon name={ic} />{cnt(c) ? <i className={`bdg ${cl || ''}`} /> : null}</span><span className="lb">{t(label)}</span>{cnt(c) ? <span className={`cnt ${cl || ''}`}>{cnt(c)}</span> : null}</Link>)}</nav>
+        <div className="me">
+          <div className="me-in" onClick={() => setProfile(true)} title="Профиль и безопасность">
+            <div className="ava">{user.initials}</div>
+            <div className="mtxt"><b>{user.full_name}</b><small>{user.role_label || t('role.' + user.role)}</small></div>
+            <button onClick={(e) => { e.stopPropagation(); logout(); }} title={t('common.logout')}><Icon name="logout" /></button>
+          </div>
+        </div>
+      </div>
     </aside>
     <main className="main">
       <Topbar title={title} onLogout={logout} />
       {!online && <div className="offline">{t('state.offline')}</div>}
       <div className={`content ${flush ? 'flush' : ''}`}>{allowed ? children : <Empty text={t('state.forbidden')} />}</div>
-      <div className="mnav">{MNAV.filter(([k]) => can(user.role, k)).map(([k, ic, l]) => <Link key={k} href={'/' + k} className={sec === k ? 'on' : ''}><Icon name={ic} />{t(l)}</Link>)}</div>
+      <div className="mnav">{MNAV.filter(([k]) => can(user.role, k)).map(([k, ic, l]) => <Link key={k} href={'/' + k} className={sec === k && !more ? 'on' : ''}><Icon name={ic} />{t(l)}</Link>)}
+        <button type="button" className={more || (sec && !MNAV.some(([k]) => k === sec)) ? 'on' : ''} onClick={() => setMore(!more)}><Icon name="menu" />Ещё</button></div>
+      {more && <div className="msheet-bg" onClick={() => setMore(false)}>
+        <div className="msheet" onClick={(e) => e.stopPropagation()}>
+          <div className="msheet-me" onClick={() => { setMore(false); setProfile(true); }}>
+            <div className="ava">{user.initials}</div><div style={{ minWidth: 0 }}><b>{user.full_name}</b><small>{user.role_label || t('role.' + user.role)} · профиль и 2FA</small></div><Icon name="chev" />
+          </div>
+          <div className="msheet-grid">{NAV.filter(([k]) => k !== 'sep' && can(user.role, k as Section) && !MNAV.some(([m]) => m === k)).map(([k, ic, label, c, cl]) =>
+            <Link key={k} href={'/' + k} className={sec === k ? 'on' : ''}><span className="nic"><Icon name={ic} />{cnt(c) ? <i className={`bdg ${cl || ''}`} /> : null}</span>{t(label)}</Link>)}</div>
+          <button className="btn ghost" style={{ width: '100%', marginTop: 12 }} onClick={logout}><Icon name="logout" />{t('common.logout')}</button>
+        </div>
+      </div>}
     </main>
     {call && <CallPopup ev={call} onClose={() => setCall(null)} />}
     {profile && <Modal small onClose={() => setProfile(false)}><h2>{user.full_name}</h2><div className="kv"><span>Логин</span><div>{user.username}</div><span>Роль</span><div>{user.role_label}</div><span>Email</span><div>{user.email || '—'}</div><span>Телефон</span><div>{user.phone || '—'}</div></div><h3>Двухфакторный вход</h3><TwoFA /><div className="row" style={{ marginTop: 16 }}><button className="btn ghost sm" onClick={logout}><Icon name="logout" />{t('common.logout')}</button></div></Modal>}
@@ -85,6 +111,7 @@ function Topbar({ title, onLogout }: { title: string; onLogout: () => void }) {
   const [q, setQ] = useState('');
   const [res, setRes] = useState<any>(null);
   const [bell, setBell] = useState(false);
+  const [sopen, setSopen] = useState(false);
   const [notifs, setNotifs] = useState<Notification[]>([]);
   const boxRef = useRef<HTMLDivElement>(null);
 
@@ -103,7 +130,7 @@ function Topbar({ title, onLogout }: { title: string; onLogout: () => void }) {
   }, []);
 
   const unread = notifs.filter((n) => !n.is_read).length;
-  const go = (href: string) => { setRes(null); setQ(''); router.push(href); };
+  const go = (href: string) => { setRes(null); setQ(''); setSopen(false); router.push(href); };
   const simulate = async () => { try { await post('simulate/call/', { phone: '+996 555 12 34 56' }); } catch (e) { toastErr(e); } };
 
   const groups: [string, string, (x: any) => [string, string, string]][] = [
@@ -114,13 +141,14 @@ function Topbar({ title, onLogout }: { title: string; onLogout: () => void }) {
   ];
   const total = res ? groups.reduce((a, [k]) => a + (res[k]?.length || 0), 0) : 0;
 
-  return <div className="top">
-    <div style={{ minWidth: 0 }}><h1>{title}</h1></div>
+  return <div className={`top ${sopen ? 'sopen' : ''}`}>
+    <div className="ttl"><div className="crumbs"><Link href="/dashboard">{t('brand.short')}</Link><Icon name="chev" /><span>{title}</span></div><h1>{title}</h1></div>
     <div className="search" ref={boxRef}><Icon name="search" /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('search.placeholder')} onKeyDown={(e) => e.key === 'Escape' && setRes(null)} />
       {res && <div className="sres">{total === 0 ? <div className="state" style={{ padding: 16 }}>{t('search.nothing')}</div> :
         groups.map(([k, l, f]) => res[k]?.length ? <div key={k}><div className="sg">{t(l)}</div>{res[k].map((x: any) => { const [h, a, b] = f(x); return <a key={h} href={h} onClick={(e) => { e.preventDefault(); go(h); }}><div style={{ fontWeight: 500 }}>{a}</div>{b && <div className="muted small" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{b}</div>}</a>; })}</div> : null)}</div>}
     </div>
-    {isManager(user.role) && <button className="ib" title="Симуляция входящего звонка" onClick={simulate}><Icon name="phone" /></button>}
+    <button className={`ib mob-only ${sopen ? 'on' : ''}`} title="Поиск" onClick={() => { setSopen(!sopen); setRes(null); if (!sopen) setTimeout(() => boxRef.current?.querySelector('input')?.focus(), 0); }}><Icon name="search" /></button>
+    {isManager(user.role) && <button className="ib hide-m" title="Симуляция входящего звонка" onClick={simulate}><Icon name="phone" /></button>}
     <button className="ib" title={t('notif.sound')} onClick={() => setSound(!sound)}><Icon name={sound ? 'vol' : 'mute'} /></button>
     <button className={`ib ${bell ? 'on' : ''}`} onClick={() => setBell(!bell)} title={t('notif.title')}><Icon name="bell" />{unread > 0 && <i className="dot">{unread > 9 ? '9+' : unread}</i>}</button>
     {bell && <div className="pop">

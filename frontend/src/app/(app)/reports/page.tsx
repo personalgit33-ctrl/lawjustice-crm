@@ -14,17 +14,17 @@ export default function ReportsPage() {
   const s = useLoad(() => get<FunnelReport>(`reports/funnel/?period=${p}`), [p]);
   const exp = async () => { try { await download(`reports/funnel/export/?period=${p}`, 'funnel.xlsx'); toast('Отчёт выгружен в Excel'); } catch (e) { toastErr(e); } };
   return <>
-    <div className="bhead"><Seg value={p} onChange={setP} options={[['week', 'Неделя'], ['month', 'Месяц'], ['quarter', 'Квартал']]} />{s.data && <b style={{ fontWeight: 600 }}>{s.data.period}</b>}
+    <div className="bhead"><Seg value={p} onChange={setP} options={[['week', 'Неделя'], ['month', 'Месяц'], ['quarter', 'Квартал']]} />{s.data?.period_label && <b style={{ fontWeight: 600 }}>{s.data.period_label}</b>}
       <button className="btn ghost sm" style={{ marginLeft: 'auto' }} onClick={() => setSpend(true)}>Внести расходы на рекламу</button><button className="btn ghost sm" onClick={exp}><Icon name="dl" />{t('common.excel')}</button></div>
     <View s={s}>{(r) => <>
-      <div className="grid kpis" style={{ gridTemplateColumns: 'repeat(4,1fr)' }}>
+      <div className="grid kpis k4">
         <Kpi label="Лиды" value={r.totals.leads} sub={`из них ${r.totals.ai_share_pct} % обработал ассистент`} />
         <Kpi label="Консультации" value={r.totals.consultations} sub={`конверсия ${r.totals.leads ? Math.round(r.totals.consultations / r.totals.leads * 100) : 0} %`} />
         <Kpi label="Договоры" value={r.totals.contracts} sub={`конверсия из консультации ${r.totals.consultations ? Math.round(r.totals.contracts / r.totals.consultations * 100) : 0} %`} />
         <Kpi label="Стоимость клиента" value={r.totals.cost_per_client != null ? money(r.totals.cost_per_client) : '—'} sub={`расход на рекламу ${money(r.totals.spend)}`} /></div>
-      <div className="grid" style={{ gridTemplateColumns: '1.4fr 1fr', marginTop: 14 }}>
+      <div className="grid g21 wide" style={{ marginTop: 14 }}>
         <div className="card np"><h3 style={{ padding: '14px 16px 0' }}>По каналам и кампаниям</h3>{r.rows.length === 0 ? <Empty /> : <table className="nw"><thead><tr><th>Канал / кампания</th><th>Расход</th><th>Лиды</th><th>Консульт.</th><th>Договоры</th><th>Оплаты</th><th>Цена лида</th><th>Цена клиента</th></tr></thead><tbody>
-          {r.rows.map((x, i) => <tr key={i}><td><ChTag c={x.channel} /> <span style={{ marginLeft: 4 }}>{x.campaign || '—'}</span></td><td>{x.spend ? num(x.spend) : '—'}</td><td>{x.leads}</td><td>{x.consultations}</td><td><b style={{ fontWeight: 600 }}>{x.contracts}</b></td><td>{x.paid_amount ? num(x.paid_amount) : '—'}</td><td className="muted">{x.cost_per_lead != null ? num(x.cost_per_lead) : '—'}</td><td>{x.cost_per_client != null ? num(x.cost_per_client) : '—'}</td></tr>)}</tbody></table>}</div>
+          {r.rows.map((x, i) => <tr key={i}><td><div className="cmp"><ChTag c={x.channel} /><span>{x.campaign || '—'}</span></div></td><td>{x.spend ? num(x.spend) : '—'}</td><td>{x.leads}</td><td>{x.consultations}</td><td><b style={{ fontWeight: 600 }}>{x.contracts}</b></td><td>{x.paid_amount ? num(x.paid_amount) : '—'}</td><td className="muted">{x.cost_per_lead != null ? num(x.cost_per_lead) : '—'}</td><td>{x.cost_per_client != null ? num(x.cost_per_client) : '—'}</td></tr>)}</tbody></table>}</div>
         <div><div className="card"><h3>Воронка</h3>{r.funnel.map((f) => <div key={f.name} className="fun"><div style={{ width: 120 }} className="small">{f.name}</div><div className="bar"><i style={{ width: `${Math.max(f.pct, 12)}%` }}>{f.count}</i></div></div>)}</div>
           <div className="card" style={{ marginTop: 14 }}><h3>Причины отказа</h3>{r.refusals.length === 0 ? <Empty text="Отказов нет" /> : r.refusals.map((x) => <div key={x.name} className="row" style={{ justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)' }}><span>{x.name}</span><b style={{ fontWeight: 600 }}>{x.count}</b></div>)}</div></div>
       </div></>}</View>

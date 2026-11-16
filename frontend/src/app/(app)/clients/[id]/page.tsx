@@ -8,7 +8,7 @@ import { Icon } from '@/components/Icon';
 import { CfTag, ChTag, Empty, Modal, View, useLoad, DueTag } from '@/components/ui';
 import { UserSelect } from '@/components/common';
 import { toast, toastErr } from '@/components/toast';
-import { dt, dur, fsize } from '@/lib/format';
+import { dt, dur, fsize, lc } from '@/lib/format';
 import { isManager } from '@/lib/access';
 import { t } from '@/i18n';
 import type { Attachment, Call, CardSummary, Case, Client, Conversation, TimelineItem } from '@/lib/types';
@@ -37,11 +37,11 @@ export default function ClientPage() {
         <span>Источник</span><div><ChTag c={c.source} /> {c.campaign}</div><span>Ответств.</span><div>{c.responsible_name || '—'}</div><span>Создан</span><div>{dt(c.created_at)}</div><span>Контакт</span><div>{c.last_contact_label || '—'}</div></div>
         {c.notes && <div className="sum"><b>Заметки</b><div style={{ marginTop: 4, whiteSpace: 'pre-wrap' }}>{c.notes}</div></div>}</div>
         <div className="card" style={{ marginTop: 14 }}><h3>Согласие на обработку ПД</h3>
-          {c.consent_status === 'given' ? <div className="note"><Icon name="ok" /><div>Получено {dt(c.consent_at, false)} · {c.consent_channel}</div></div> : c.consent_status === 'revoked' ? <div className="note r"><Icon name="alert" /><div>Отозвано {dt(c.consent_at, false)}. Обработка данных ограничена.</div></div> : <div className="note w"><Icon name="alert" /><div>Согласие не получено</div></div>}
+          {c.consent_status === 'given' ? <div className="note"><Icon name="ok" /><div>Получено {lc(dt(c.consent_at, false))} · {c.consent_channel}</div></div> : c.consent_status === 'revoked' ? <div className="note r"><Icon name="alert" /><div>Отозвано {lc(dt(c.consent_at, false))}. Обработка данных ограничена.</div></div> : <div className="note w"><Icon name="alert" /><div>Согласие не получено</div></div>}
           <div className="row" style={{ marginTop: 10 }}>{c.consent_status !== 'given' && <button className="btn ghost sm" onClick={() => consent(c, 'given')}>Зафиксировать согласие</button>}{c.consent_status === 'given' && <button className="btn ghost sm" onClick={() => consent(c, 'revoked')}>Отзыв согласия</button>}</div></div></div>
       <div className="card">
         <div className="tabs">{([['timeline', 'Хронология'], ['cases', `Дела ${rel.data?.cases.length ?? ''}`], ['cards', `Карточки ${rel.data?.cards.length ?? ''}`], ['chats', `Диалоги ${rel.data?.conversations.length ?? ''}`], ['calls', `Звонки ${rel.data?.calls.length ?? ''}`], ['files', `Документы ${rel.data?.files.length ?? ''}`]] as const).map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}</button>)}</div>
-        {tab === 'timeline' ? <View s={tl}>{(items) => items.length === 0 ? <Empty /> : <div className="tl">{items.map((i) => <div key={i.id}><div className="muted small">{dt(i.created_at)} · {i.is_ai ? <span className="tag b">{t('common.assistant')}</span> : i.actor}</div><div>{i.link ? <Link className="lnk" href={i.link}>{i.text}</Link> : i.text}</div></div>)}</div>}</View>
+        {tab === 'timeline' ? <View s={tl}>{(items) => items.length === 0 ? <Empty /> : <div className="tl">{items.map((i) => <div key={i.id}><div className="muted small">{dt(i.created_at)}{i.is_ai ? <> · <span className="tag b">{t('common.assistant')}</span></> : i.actor ? ` · ${i.actor}` : ''}</div><div>{i.link ? <Link className="lnk" href={i.link}>{i.text}</Link> : i.text}</div></div>)}</div>}</View>
           : <View s={rel}>{(r) => {
             if (tab === 'cases') return r.cases.length ? <table><tbody>{r.cases.map((x) => <tr key={x.id} className="click" onClick={() => router.push(`/cases/${x.id}`)}><td className="muted">№ {x.number}</td><td><b style={{ fontWeight: 500 }}>{x.title}</b></td><td><span className="tag b">{x.status_label}</span></td><td>{x.responsible_name}</td><td><DueTag s={x.nearest_deadline_state} /></td></tr>)}</tbody></table> : <Empty text="Дел нет" />;
             if (tab === 'cards') return r.cards.length ? <table><tbody>{r.cards.map((x) => <tr key={x.id} className="click" onClick={() => router.push(`/boards?card=${x.id}`)}><td><b style={{ fontWeight: 500 }}>{x.title}</b></td><td className="muted">{x.board_name}</td><td>{x.due_label}</td></tr>)}</tbody></table> : <Empty text="Карточек нет" />;

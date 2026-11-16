@@ -103,6 +103,18 @@ def _period_start(period):
     return today.replace(day=1)
 
 
+_MON_GEN = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"]
+
+
+def _period_label(start):
+    """«1–14 ноября 2026» / «16 августа — 14 ноября 2026» — подпись периода для отчёта."""
+    end = timezone.localdate()
+    if (start.year, start.month) == (end.year, end.month):
+        return f"{start.day}–{end.day} {_MON_GEN[end.month - 1]} {end.year}"
+    y = f" {start.year}" if start.year != end.year else ""
+    return f"{start.day} {_MON_GEN[start.month - 1]}{y} — {end.day} {_MON_GEN[end.month - 1]} {end.year}"
+
+
 def funnel_data(period):
     from apps.comms.models import Lead
     from .models import Contract
@@ -146,6 +158,7 @@ def funnel_data(period):
     ai_handled = Conversation.objects.filter(lead__in=leads).exclude(messages__author="op").count()
     return {
         "period": period,
+        "period_label": _period_label(start),
         "totals": {"leads": tl, "consultations": tc, "contracts": tk, "paid": paid, "spend": spend, "cost_per_client": round(spend / tk) if tk and spend else None, "ai_share_pct": round(ai_handled * 100 / tl) if tl else 0},
         "rows": out,
         "funnel": [{"name": "Лиды", "count": tl, "pct": 100 if tl else 0}, {"name": "Квалифицированы", "count": qual, "pct": pct(qual)}, {"name": "Консультации", "count": tc, "pct": pct(tc)}, {"name": "Договоры", "count": tk, "pct": pct(tk)}, {"name": "Оплачено", "count": paid, "pct": pct(paid)}],
