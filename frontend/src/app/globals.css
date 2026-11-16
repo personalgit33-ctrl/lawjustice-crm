@@ -496,3 +496,117 @@ h1,h2,h3,.page-title,.top h1,.kpi b,.card h3,.modal h2{font-family:var(--font-he
 .mark svg.logo{width:26px;height:26px}
 .bname b{font-family:var(--font-head);font-weight:800;letter-spacing:.04em;text-transform:uppercase;font-size:13px}
 html[data-sidebar="light"] .mark{background:var(--ink)}
+
+/* =====================================================================
+   Стекло и движение (glassmorphism + микро-анимации)
+   Принципы: стекло — на поверхностях поверх фона (карточки, шапки окон,
+   поповеры, модалки, нижнее меню); плотные списки (канбан, строки таблиц)
+   остаются непрозрачными ради читаемости. Анимации ≤ 260 мс, ease-out,
+   только transform/opacity; hover — только на устройствах с мышью.
+   ===================================================================== */
+:root{
+  --ease-out:cubic-bezier(.23,1,.32,1);
+  --ease-io:cubic-bezier(.77,0,.175,1);
+  --glass:rgba(255,255,255,.66);
+  --glass-strong:rgba(255,255,255,.84);
+  --glass-line:rgba(255,255,255,.75);
+  --glass-edge:rgba(36,36,36,.07);
+  --glass-blur:blur(18px) saturate(165%);
+  --glass-shadow:0 1px 0 rgba(255,255,255,.85) inset,0 0 0 1px var(--glass-edge),0 10px 30px -12px rgba(36,36,36,.18);
+  --gold-grad:linear-gradient(180deg,#D9A03A 0%,#C58514 52%,#B07410 100%);
+  --gold-glow:0 1px 0 rgba(255,255,255,.35) inset,0 -1px 0 rgba(0,0,0,.12) inset,0 6px 16px -6px rgba(197,133,20,.65);
+}
+/* фон-атмосфера: мягкие золотые и графитовые пятна, чтобы стеклу было что размывать */
+body{background:
+  radial-gradient(900px 520px at 100% -8%,rgba(214,160,58,.22),transparent 60%),
+  radial-gradient(760px 520px at 8% 108%,rgba(36,36,36,.10),transparent 62%),
+  radial-gradient(620px 420px at 46% 52%,rgba(197,133,20,.07),transparent 70%),
+  var(--bg);background-attachment:fixed}
+
+/* --- стеклянные поверхности --- */
+.card{background:var(--glass);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow)}
+.card .fld,.card select.fld,.card textarea.fld{background:rgba(245,242,237,.85)}
+.pop,.sres,.callpop{background:var(--glass-strong);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow),0 24px 48px -16px rgba(36,36,36,.28)}
+.modal{background:rgba(24,24,24,.32);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.mbox{background:rgba(255,255,255,.9);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-line);border-radius:16px;box-shadow:var(--glass-shadow),0 30px 70px -20px rgba(0,0,0,.4)}
+.toast{background:rgba(36,36,36,.86);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.08);border-radius:10px}
+.toast.r{background:rgba(185,28,28,.9)}
+.seg{background:var(--glass);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow)}
+.seg button{transition:background-color .18s ease,color .18s ease,box-shadow .18s ease,transform .16s var(--ease-out)}
+.seg button.on{background:var(--gold-grad);box-shadow:var(--gold-glow)}
+.ib{background:var(--glass);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow);transition:color .15s ease,border-color .15s ease,background-color .15s ease,transform .16s var(--ease-out),box-shadow .2s ease}
+.ib.on{background:var(--primary-light)}
+.search{background:var(--glass)!important;-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-line)!important;box-shadow:var(--glass-shadow)}
+.list{background:rgba(236,232,226,.6);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 0 0 1px rgba(255,255,255,.55) inset}
+@media (max-width:760px){
+  .mnav{background:rgba(255,255,255,.78)!important;-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border-top:1px solid var(--glass-line)!important;box-shadow:0 -8px 24px -12px rgba(36,36,36,.18)}
+  .msheet{background:rgba(255,255,255,.9);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border-top:1px solid var(--glass-line)}
+  .msheet-bg{background:rgba(24,24,24,.28);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+}
+
+/* --- кнопки --- */
+.btn{position:relative;overflow:hidden;isolation:isolate;background:var(--gold-grad);box-shadow:var(--gold-glow);border:1px solid rgba(150,98,10,.35);
+  transition:transform .16s var(--ease-out),box-shadow .2s ease,filter .2s ease,background-color .15s ease,border-color .15s ease,color .15s ease}
+.btn::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.38) 48%,transparent 64%);transform:translateX(-120%);transition:transform .6s var(--ease-out)}
+.btn:active:not(:disabled){transform:scale(.97);transition-duration:.08s}
+.btn.ghost{background:var(--glass);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-line);box-shadow:var(--glass-shadow);color:var(--text-strong)}
+.btn.ghost::after{background:linear-gradient(105deg,transparent 30%,rgba(197,133,20,.12) 48%,transparent 64%)}
+.btn.red{background:linear-gradient(180deg,#E5484D,#C7262C);border-color:rgba(130,20,20,.35);box-shadow:0 1px 0 rgba(255,255,255,.3) inset,0 6px 16px -6px rgba(199,38,44,.6)}
+.btn.grn{background:linear-gradient(180deg,#22A35A,#15803D);border-color:rgba(10,80,35,.35);box-shadow:0 1px 0 rgba(255,255,255,.3) inset,0 6px 16px -6px rgba(21,128,61,.55)}
+.btn.link{background:none;border:0;box-shadow:none;overflow:visible}.btn.link::after{display:none}
+.abtn{background:var(--gold-grad);box-shadow:var(--gold-glow),0 14px 30px -10px rgba(197,133,20,.7);transition:transform .16s var(--ease-out),box-shadow .2s ease,filter .2s ease}
+.abtn:active:not(:disabled){transform:scale(.98)}
+.nav a{transition:background-color .18s ease,color .18s ease,box-shadow .25s ease,transform .16s var(--ease-out)}
+.nav a.on{background:var(--gold-grad);box-shadow:var(--gold-glow)}
+.nav a:active{transform:scale(.97)}
+.ib:active,.seg button:active,.mnav a:active,.mnav button:active,.msheet-grid a:active,.picker button:active{transform:scale(.95)}
+
+@media (hover:hover) and (pointer:fine){
+  .btn:hover:not(:disabled){filter:brightness(1.06);transform:translateY(-1px);box-shadow:var(--gold-glow),0 12px 24px -10px rgba(197,133,20,.75)}
+  .btn:hover:not(:disabled)::after{transform:translateX(120%)}
+  .btn.ghost:hover:not(:disabled){filter:none;border-color:rgba(197,133,20,.55);color:var(--primary);background:rgba(255,255,255,.82);box-shadow:var(--glass-shadow),0 10px 22px -12px rgba(197,133,20,.5)}
+  .btn.red:hover:not(:disabled){box-shadow:0 1px 0 rgba(255,255,255,.3) inset,0 12px 24px -10px rgba(199,38,44,.7)}
+  .btn.grn:hover:not(:disabled){box-shadow:0 1px 0 rgba(255,255,255,.3) inset,0 12px 24px -10px rgba(21,128,61,.6)}
+  .btn.link:hover{transform:none;filter:none}
+  .abtn:hover:not(:disabled){filter:brightness(1.06);transform:translateY(-1px)}
+  .ib:hover{transform:translateY(-1px);background:rgba(255,255,255,.85);box-shadow:var(--glass-shadow),0 8px 18px -10px rgba(36,36,36,.3)}
+  .kc{transition:transform .2s var(--ease-out),box-shadow .2s ease,border-color .15s ease}
+  .kc:hover{transform:translateY(-2px);box-shadow:0 12px 24px -14px rgba(36,36,36,.35)}
+  .kpi{transition:transform .25s var(--ease-out),box-shadow .25s ease}
+  .kpi:hover{transform:translateY(-2px);box-shadow:var(--glass-shadow),0 18px 36px -18px rgba(197,133,20,.45)}
+  .msheet-grid a,.picker button{transition:transform .16s var(--ease-out),border-color .15s ease,background-color .15s ease}
+  tbody tr{transition:background-color .15s ease}
+}
+
+/* --- появление --- */
+@keyframes lj-rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes lj-fade{from{opacity:0}to{opacity:1}}
+@keyframes lj-pop{from{opacity:0;transform:scale(.96) translateY(-4px)}to{opacity:1;transform:none}}
+@keyframes lj-modal{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:none}}
+@keyframes lj-toast{from{opacity:0;transform:translateY(-10px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes lj-sheet{from{transform:translateY(100%)}to{transform:none}}
+@keyframes lj-shine{from{background-position:-200% 0}to{background-position:200% 0}}
+/* содержимое страницы: короткий подъём с лесенкой первых блоков */
+.content>*{animation:lj-rise .26s var(--ease-out) both}
+.content>*:nth-child(2){animation-delay:.04s}.content>*:nth-child(3){animation-delay:.08s}.content>*:nth-child(4){animation-delay:.12s}.content>*:nth-child(n+5){animation-delay:.16s}
+.kpis>*{animation:lj-rise .3s var(--ease-out) both}
+.kpis>*:nth-child(2){animation-delay:.05s}.kpis>*:nth-child(3){animation-delay:.1s}.kpis>*:nth-child(4){animation-delay:.15s}.kpis>*:nth-child(5){animation-delay:.2s}
+.pop,.sres{transform-origin:top right;animation:lj-pop .18s var(--ease-out) both}
+.sres{transform-origin:top center}
+.callpop{transform-origin:bottom right;animation:lj-pop .22s var(--ease-out) both}
+.modal{animation:lj-fade .18s ease-out both}
+.mbox{animation:lj-modal .24s var(--ease-out) both}
+.toast{animation:lj-toast .24s var(--ease-out) both}
+.msheet{animation:lj-sheet .32s cubic-bezier(.32,.72,0,1) both}
+.msheet-bg{animation:lj-fade .2s ease-out both}
+.auth-card{animation:lj-modal .4s var(--ease-out) both}
+/* скелетон-загрузка: мягкий перелив вместо мигания */
+.skel,.loading-bar{background:linear-gradient(90deg,rgba(236,232,226,.7) 25%,rgba(255,255,255,.9) 50%,rgba(236,232,226,.7) 75%);background-size:200% 100%;animation:lj-shine 1.2s linear infinite}
+/* поля: мягкое золотое кольцо фокуса */
+.fld,.ain{transition:border-color .15s ease,box-shadow .2s ease,background-color .15s ease}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important}
+  .btn::after{display:none}
+}
